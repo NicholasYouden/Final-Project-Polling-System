@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <string.h>
+#define MAX_CANDIDATES 10
+#define MAX_VOTERS 100
+
+struct candidate {
+    int id;
+    char name[50];
+    char party[50];
+    int votes;
+};
+
+struct voter {
+    int id;
+    char name[50];
+    int voted;
+};
+
+struct poll {
+    struct candidate candidates[MAX_CANDIDATES];
+    struct voter voters[MAX_VOTERS];
+    int num_candidates;
+    int num_voters;
+};
+
+void add_candidate(struct poll* p, char* name, char* party) {
+    if (p->num_candidates < MAX_CANDIDATES) {
+        int id = p->num_candidates + 1;
+        struct candidate c = { id, "", "", 0 };
+        strncpy(c.name, name, 50);
+        strncpy(c.party, party, 50);
+        p->candidates[p->num_candidates] = c;
+        p->num_candidates++;
+        printf("Candidate added successfully!\n");
+    } else {
+        printf("Sorry, maximum number of candidates reached.\n");
+    }
+}
+
+void add_voter(struct poll* p, char* name) {
+    if (p->num_voters < MAX_VOTERS) {
+        int id = p->num_voters + 1;
+        struct voter v = { id, "", 0 };
+        strncpy(v.name, name, 50);
+        p->voters[p->num_voters] = v;
+        p->num_voters++;
+        printf("Voter added successfully!\n");
+    } else {
+        printf("Sorry, maximum number of voters reached.\n");
+    }
+}
+
+void cast_vote(struct poll* p, int voter_id, int candidate_id) {
+    if (voter_id < 1 || voter_id > p->num_voters) {
+        printf("Invalid voter ID.\n");
+        return;
+    }
+    if (candidate_id < 1 || candidate_id > p->num_candidates) {
+        printf("Invalid candidate ID.\n");
+        return;
+    }
+    if (p->voters[voter_id-1].voted) {
+        printf("Sorry, this voter has already cast their vote.\n");
+        return;
+    }
+    p->candidates[candidate_id-1].votes++;
+    p->voters[voter_id-1].voted = 1;
+    printf("Vote cast successfully!\n");
+}
+
+void view_results(struct poll* p) {
+    printf("Results:\n");
+    for (int i = 0; i < p->num_candidates; i++) {
+        struct candidate c = p->candidates[i];
+        printf("%s (%s): %d votes\n", c.name, c.party, c.votes);
+    }
+}
+
+int main() {
+    struct poll p = { {}, {}, 0, 0 };
+    add_candidate(&p, "John Smith", "Independent");
+    add_candidate(&p, "Jane Doe", "Democrat");
+    add_candidate(&p, "Bob Johnson", "Republican");
+    add_voter(&p, "Alice Johnson");
+    add_voter(&p, "Bob Johnson");
+    cast_vote(&p, 1, 2);
+    cast_vote(&p, 2, 1);
+    cast_vote(&p, 1, 3);
+    view_results(&p);
+    return 0;
+}
